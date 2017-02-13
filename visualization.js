@@ -285,20 +285,12 @@ vis.append('circle')
 vis.append("text")
   .attr("dy", ".3em")
   .style("text-anchor", "middle")
-  .each(getSize)
   .style("font-size", function(d) {
     return d.scale*10 + "px"
   })
   .text(function(d) {
     return d.name;
   });
-
-function getSize(d) {
-  var bound = this.getBBox(),
-      cbound = this.parentNode.getBBox(),
-      scale = Math.min(cbound.width/bound.width, cbound.height/bound.height);
-  d.scale = scale;
-}
 
 //Calling tip functions on svg
 svg.call(tip);
