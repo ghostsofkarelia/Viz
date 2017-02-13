@@ -175,18 +175,18 @@ var updateBubbleChart = function(department, bcl, tip) {
 	
 
   visEnter.append("text")
-    .attr("dy", ".3em")
-    .style("text-anchor", "middle")
-    .style("font-size", function(d) {
-      var len = d.name.substring(0, d.r / 3).length;
-      var size = d.r / 3;
-      size *= 6 / len;
-      size += 1;
-      return Math.round(size) + 'px';
-    })
-    .text(function(d) {
-      return d.name;
-    });
+  .attr("dy", ".3em")
+  .style("text-anchor", "middle")
+  .style("font-size", function(d) {
+    var len = d.name.substring(0, d.r / 3).length;
+    var size = d.r / 3;
+    size *= 5 / len;
+    size += 1;
+    return Math.round(size) + 'px';
+  })
+  .text(function(d) {
+    return d.name;
+  });
 
   var tip = d3.tip()
     .attr('class', 'd3-tip')
@@ -268,7 +268,7 @@ vis.on('mouseover', function() {
 			return d.bigradius;
 		});
 	});
-  
+
 vis.append('circle')
   //.attr("stroke", "gray")
   .attr('r', function(d) {
@@ -286,7 +286,11 @@ vis.append("text")
   .attr("dy", ".3em")
   .style("text-anchor", "middle")
   .style("font-size", function(d) {
-    return d.scale*10 + "px"
+    var len = d.name.substring(0, d.r / 3).length;
+    var size = d.r / 3;
+    size *= 5 / len;
+    size += 1;
+    return Math.round(size) + 'px';
   })
   .text(function(d) {
     return d.name;
