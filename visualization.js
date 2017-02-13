@@ -39,7 +39,7 @@ var DataPrep = function() {
           });
         }
       } else {
-        if (deptName != '' && deptName != undefined) {
+        if (deptName != '') {
           var bcl = {};
           programsArray.push({
             name: programName,
