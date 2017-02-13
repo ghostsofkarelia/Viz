@@ -281,16 +281,20 @@ vis.append('circle')
 vis.append("text")
   .attr("dy", ".3em")
   .style("text-anchor", "middle")
+  .each(getSize)
   .style("font-size", function(d) {
-    var len = d.name.substring(0, d.r / 3).length;
-    var size = d.r / 3;
-    size *= 5 / len;
-    size += 1;
-    return Math.round(size) + 'px';
+    return d.scale + "px"
   })
   .text(function(d) {
     return d.name;
   });
+
+function getSize(d) {
+  var bound = this.getBBox(),
+      cbound = this.parentNode.getBBox(),
+      scale = Math.min(cbound.width/bound.width, cbound.height/bound.height);
+  d.scale = scale;
+}
 
 //Calling tip functions on svg
 svg.call(tip);
