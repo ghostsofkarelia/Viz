@@ -135,7 +135,9 @@ var updateBubbleChart = function(department, bcl, tip) {
     .value(function(d) {
       return d.size;
     })
-    .sort(null)
+    .sort(function(a, b) {
+    return -(a.size - b.size);
+  })
     .padding(1.5);
 
 
@@ -228,7 +230,9 @@ var bubble = d3.layout.pack()
   .value(function(d) {
     return d.size;
   })
-  .sort(null)
+  .sort(function(a, b) {
+    return -(a.size - b.size);
+  })
   .padding(1.5);
   
  //Creating a D3 tooltip
