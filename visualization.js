@@ -39,7 +39,7 @@ var DataPrep = function() {
           });
         }
       } else {
-        if (deptName != '') {
+        if (deptName != '' and deptName! = undefined) {
           var bcl = {};
           programsArray.push({
             name: programName,
@@ -283,7 +283,7 @@ vis.append("text")
   .style("text-anchor", "middle")
   .each(getSize)
   .style("font-size", function(d) {
-    return d.scale + "px"
+    return d.scale*10 + "px"
   })
   .text(function(d) {
     return d.name;
