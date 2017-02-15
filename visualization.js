@@ -2,6 +2,7 @@
 //Saving data for global use
 var seattleGovData = [];
 var globalData = [];
+var values = [];
 //Your code goes here!
 
 //Function to retrieve data via an ajax call
@@ -12,10 +13,39 @@ var getData = function() {
     success: function(data) {
       for (var i = 0; i < data.length; i++) {
         seattleGovData.push(data[i]);
+        //
+          // values.push(data[i]['_2014_proposed']);
       }
     }
   });
 }
+
+var bouncer = function(arr) {
+  var filteredArray = arr.filter(Boolean);
+  return filteredArray;
+}
+
+var sortSizes = function(data) {
+  var values = [];
+
+  for (var dept in data) {
+    var sum = 0;
+    var bclString = '';
+    for (var bcl in data[dept]) {
+      var array = data[dept][bcl];
+      bclString = bcl
+      for (var i = 0; i < array.length; i++) {
+        sum = sum + array[i].proposed;
+      }
+    }
+    if (!isNaN(sum)) {
+      values.push(sum)
+    }
+  }
+  values = bouncer(values);
+  return values;
+}
+
 //Preparing data in a valid JSON format and returning the array
 var DataPrep = function() {
   this.transformData = function() {
@@ -59,6 +89,9 @@ var DataPrep = function() {
 //Preparing data for the D3 bubble charts
 var prepareData = function() {
   globalData = new DataPrep().transformData();
+  values = sortSizes(globalData);
+  var min_val = Math.min.apply(null,values);
+  var max_val = Math.max.apply(null,values);
   var bubbleData = [];
   for (var dept in globalData) {
     var sum = 0;
@@ -76,7 +109,8 @@ var prepareData = function() {
       bubbleObj.className = dept.toLowerCase();
       bubbleObj.size = sum;
       bubbleObj.bcl = bclString;
-      var color = "hsl(" + Math.random() * 360 + ",100%,50%)";
+      var temp = (sum - min_val)/(max_val-min_val)*(360);
+      var color = "hsl(" + parseInt(temp) + ",100%,50%)";
       bubbleObj.color = color;
       bubbleData.push(bubbleObj);
     }
@@ -86,19 +120,38 @@ var prepareData = function() {
   };
 }
 
+var sortBclSizes = function(department,bcl) {
+    var bcl_values = []
+    for (var bclVar in globalData[department]) {
+        var deptObj = globalData[department][bclVar];
+        for (var array in deptObj) {
+            var name = deptObj[array].name;
+            var proposed = deptObj[array].proposed;
+            if (proposed != 0) {
+                bcl_values.push(proposed)
+            }
+        }
+    }
+    bcl_values = bouncer(bcl_values);
+    return bcl_values;
+}
+
 //Preparing data for D3 bubble charts on click of Dept bubble
 var prepareUpdatedData = function(department, bcl) {
   var bubbleDataNextLevel = [];
   var sum = 0;
+  var bcl_values = sortBclSizes(department,bcl);
+  var min_val = Math.min.apply(null,bcl_values);
+  var max_val = Math.max.apply(null,bcl_values);
   for (var bclVar in globalData[department]) {
     //debugger;
     var deptObj = globalData[department][bclVar];
     for (var array in deptObj) {
       var name = deptObj[array].name;
       var proposed = deptObj[array].proposed;
-      console.log(name + " and " + proposed);
       if (proposed != 0) {
-        var color = "hsl(" + Math.random() * 360 + ",100%,50%)";
+        var temp = (proposed - min_val)/(max_val-min_val)*(360);
+        var color = "hsl(" + parseInt(temp) + ",100%,50%)";
         bubbleDataNextLevel.push({
           name: name,
           className: name.toLowerCase(),
@@ -135,9 +188,7 @@ var updateBubbleChart = function(department, bcl, tip) {
     .value(function(d) {
       return d.size;
     })
-    .sort(function(a, b) {
-    return -(a.size - b.size);
-  })
+    .sort(null)
     .padding(1.5);
 
 
@@ -175,18 +226,18 @@ var updateBubbleChart = function(department, bcl, tip) {
 	
 
   visEnter.append("text")
-  .attr("dy", ".3em")
-  .style("text-anchor", "middle")
-  .style("font-size", function(d) {
-    var len = d.name.substring(0, d.r / 3).length;
-    var size = d.r / 3;
-    size *= 5 / len;
-    size += 1;
-    return Math.round(size) + 'px';
-  })
-  .text(function(d) {
-    return d.name;
-  });
+    .attr("dy", ".3em")
+    .style("text-anchor", "middle")
+    .style("font-size", function(d) {
+      var len = d.name.substring(0, d.r / 3).length;
+      var size = d.r / 3;
+      size *= 6 / len;
+      size += 1;
+      return Math.round(size) + 'px';
+    })
+    .text(function(d) {
+      return d.name;
+    });
 
   var tip = d3.tip()
     .attr('class', 'd3-tip')
@@ -234,6 +285,38 @@ var bubble = d3.layout.pack()
     return -(a.size - b.size);
   })
   .padding(1.5);
+
+function charge(d) {
+  return -Math.pow(d.radius, 2.0) / 8;
+}
+
+// Creation of d3 force layout
+var force = d3.layout.force()
+  .size([800, 800])
+  .charge(charge) // <- Using the charge function in the force layout
+  .gravity(-0.01)
+  .friction(0.9);
+
+// Group circles into a single blob.
+function groupBubbles() {
+  force.on('tick', function (e) {
+    bubble.each(moveToCenter(e.alpha))
+      .attr('cx', function (d) { return d.x; })
+      .attr('cy', function (d) { return d.y; });
+  });
+
+  force.start();
+}
+
+function moveToCenter(alpha) {
+  return function (d) {
+    d.x = d.x + (center.x - d.x) * 0.102 * alpha;
+    d.y = d.y + (center.y - d.y) * 0.102 * alpha;
+  };
+}
+
+groupBubbles();
+
   
  //Creating a D3 tooltip
 var tip = d3.tip()
