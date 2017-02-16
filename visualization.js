@@ -228,13 +228,7 @@ var updateBubbleChart = function(department, bcl, tip) {
   visEnter.append("text")
     .attr("dy", ".3em")
     .style("text-anchor", "middle")
-    .style("font-size", function(d) {
-      var len = d.name.substring(0, d.r / 3).length;
-      var size = d.r / 3;
-      size *= 6 / len;
-      size += 1;
-      return Math.round(size) + 'px';
-    })
+    .style("font-size", function(d) { return Math.min(2 * d.r, (2 * d.r - 8) / d.name.length * 13) + "%"; })
     .text(function(d) {
       return d.name;
     });
